@@ -127,11 +127,20 @@
 
 - (void)removeFromSuperview {
     [self parentDidDisappear];
-    [self pauseARSession];
     
+    // First pause the AR session
     if (_vroView) {
         @try {
             VROViewAR *viewAR = (VROViewAR *)_vroView;
+            [viewAR setPaused:YES];
+            
+            // Get and pause the AR session
+            std::shared_ptr<VROARSession> arSession = [viewAR getARSession];
+            if (arSession) {
+                arSession->pause();
+            }
+            
+            // Clean up GL resources
             [viewAR deleteGL];
         } @catch (NSException *exception) {
             RCTLogError(@"Error during AR view cleanup: %@", exception.reason);
